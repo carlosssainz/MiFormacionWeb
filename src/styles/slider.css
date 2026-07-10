@@ -1,0 +1,46 @@
+.news-slider .slick-dots {
+  position: static;
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  margin: 3px 0;
+}
+
+.news-slider .slick-dots li button:before {
+  font-size: 8px;
+  color: #659B35;
+  opacity: 0.5;
+}
+
+.news-slider .slick-dots li.slick-active button:before {
+  opacity: 1;
+  color: #659B35;
+}
+
+.news-slider .slick-slide > div {
+  padding: 0 2px;
+}
+
+.tools-slider .slick-slide > div {
+  padding: 0 2px;
+}
+
+.tools-slider .slick-dots {
+  bottom: -18px;
+}
+
+.tools-slider .slick-track {
+  display: flex;
+  align-items: stretch;
+}
+
+.tools-slider .slick-dots li button:before {
+  font-size: 6px;
+  color: #659B35;
+  opacity: 0.5;
+}
+
+.tools-slider .slick-dots li.slick-active button:before {
+  opacity: 1;
+  color: #659B35;
+}
