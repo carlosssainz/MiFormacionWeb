@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect } from "react";
 import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { TutorialProvider } from "./context/TutorialContext";
 import { LoginScreen } from "./components/LoginScreen";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { Sidebar } from "./components/Sidebar";
@@ -197,16 +198,17 @@ function AppRoutes() {
   }
 
   return (
-    <div className="h-full">
+    <div className="h-full lg:flex lg:flex-row">
       <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
 
-      <GlobalSearchModal
-        open={globalSearchOpen}
-        onClose={() => setGlobalSearchOpen(false)}
-      />
+      <div className="h-full flex flex-col flex-1 min-w-0 lg:ml-[380px]">
+        <GlobalSearchModal
+          open={globalSearchOpen}
+          onClose={() => setGlobalSearchOpen(false)}
+        />
 
-      <Suspense fallback={<LoadingScreen />}>
-        <Routes>
+        <Suspense fallback={<LoadingScreen />}>
+          <Routes>
           <Route path="/" element={<HomeScreen />} />
           <Route path="/avisos" element={<AvisosScreen />} />
           <Route path="/profile" element={<ProfileScreen />} />
@@ -260,6 +262,7 @@ function AppRoutes() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
+      </div>
     </div>
   );
 }
@@ -268,7 +271,9 @@ export default function App() {
   return (
     <HashRouter>
       <AuthProvider>
-        <AppRoutes />
+        <TutorialProvider>
+          <AppRoutes />
+        </TutorialProvider>
       </AuthProvider>
     </HashRouter>
   );

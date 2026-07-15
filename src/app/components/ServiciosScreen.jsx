@@ -72,12 +72,16 @@ export function ServiciosScreen() {
       headerMode="back"
       backTitle={t("services.title")}
       helpKey="servicios"
+      tutorialKey="servicios"
     >
       <div className="grid grid-cols-2 gap-3">
-        {servicios.map((s) => (
+        {servicios.map((s) => {
+          const tAttr = s.id === "proximos" ? "servicios-cursos" : s.id === "portales" ? "servicios-recursos" : undefined;
+          return (
           <button
             key={s.id}
             onClick={() => navigate(s.screen)}
+            data-tutorial={tAttr}
             className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm text-left hover:shadow-md transition-shadow"
           >
             <div className="w-12 h-12 bg-[#659B35] rounded-lg flex items-center justify-center text-white mb-3">
@@ -90,7 +94,8 @@ export function ServiciosScreen() {
               {s.subtitle}
             </p>
           </button>
-        ))}
+          );
+        })}
       </div>
     </ScreenLayout>
   );

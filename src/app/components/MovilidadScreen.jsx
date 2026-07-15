@@ -56,12 +56,16 @@ export function MovilidadScreen() {
       headerMode="back"
       backTitle={t("mobility.title")}
       helpKey="movilidad"
+      tutorialKey="movilidad"
     >
       <div className="grid grid-cols-2 gap-3">
-        {herramientas.map((h) => (
+        {herramientas.map((h) => {
+          const tAttr = h.id === "solicitudes" ? "movilidad-solicitudes" : h.id === "previstos" ? "movilidad-examenes" : h.id === "temarios" ? "movilidad-temarios" : undefined;
+          return (
           <button
             key={h.id}
             onClick={() => navigate(h.screen)}
+            data-tutorial={tAttr}
             className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm text-left hover:shadow-md transition-shadow"
           >
             <div className="w-12 h-12 bg-[#659B35] rounded-lg flex items-center justify-center text-white mb-3">
@@ -74,7 +78,8 @@ export function MovilidadScreen() {
               {h.subtitle}
             </p>
           </button>
-        ))}
+          );
+        })}
       </div>
     </ScreenLayout>
   );

@@ -72,12 +72,16 @@ export function HerramientasScreen() {
       headerMode="back"
       backTitle={t("tools.title")}
       helpKey="herramientas"
+      tutorialKey="herramientas"
     >
       <div className="grid grid-cols-2 gap-3">
-        {herramientas.map((h) => (
+        {herramientas.map((h) => {
+          const tAttr = h.id === "proximos" ? "herramientas-cursos" : h.id === "portales" ? "herramientas-recursos" : undefined;
+          return (
           <button
             key={h.id}
             onClick={() => navigate(h.screen)}
+            data-tutorial={tAttr}
             className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm text-left hover:shadow-md transition-shadow"
           >
             <div className="w-12 h-12 bg-[#659B35] rounded-lg flex items-center justify-center text-white mb-3">
@@ -90,7 +94,8 @@ export function HerramientasScreen() {
               {h.subtitle}
             </p>
           </button>
-        ))}
+          );
+        })}
       </div>
     </ScreenLayout>
   );

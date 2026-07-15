@@ -35,6 +35,7 @@ export function PildorasScreen() {
       headerMode="back"
       backTitle={t("pills.title")}
       helpKey="pildoras"
+      tutorialKey="pildoras"
     >
       <div className="px-4 pb-3">
         <div className="relative">
@@ -44,6 +45,7 @@ export function PildorasScreen() {
           />
           <input
             type="text"
+            data-tutorial="pildoras-search"
             placeholder={t("pills.searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -52,7 +54,7 @@ export function PildorasScreen() {
         </div>
       </div>
 
-      <div className="px-4 pb-3 flex gap-2 overflow-x-auto">
+      <div className="px-4 pb-3 flex gap-2 overflow-x-auto" data-tutorial="pildoras-categorias">
         {categorias.map((cat) => (
           <button
             key={cat}
@@ -77,6 +79,7 @@ export function PildorasScreen() {
           filtered.map((p) => (
             <div
               key={p.id}
+              data-tutorial="pildoras-list"
               className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm"
             >
               <div className="flex items-start gap-3">

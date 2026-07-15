@@ -13,6 +13,8 @@ import { DetailCard } from "./DetailCard";
 import { PopupOverlay } from "./PopupOverlay";
 import { EmptyState } from "./EmptyState";
 import { ContextualHelp } from "./ContextualHelp";
+import { TutorialOverlay } from "./TutorialOverlay";
+import { TUTORIALS } from "../data/tutorialContent";
 import { useI18n } from "../context/I18nContext";
 
 function getDaysInMonth(year, month) {
@@ -75,7 +77,8 @@ export function AgendaScreen() {
   const [viewMode, setViewMode] = useState("month");
   const [events, setEvents] = useState(AGENDA_EVENTS);
   const [menuOpenId, setMenuOpenId] = useState(null);
-  const [helpOpen, setHelpOpen] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
 
   const daysInMonth = getDaysInMonth(currentYear, currentMonth);
   const firstWeekday = getFirstWeekday(currentYear, currentMonth);
@@ -190,9 +193,9 @@ export function AgendaScreen() {
     <ScreenLayout
       headerMode="top"
       scrollable={false}
-      onHelpClick={() => setHelpOpen(true)}
+      onHelpClick={() => setShowGuide(true)}
     >
-      <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-b border-[#CCCCCC] dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-b border-[#CCCCCC] dark:border-gray-700" data-tutorial="agenda-navegacion">
         <button
           onClick={handlePrev}
           className="flex items-center gap-1 text-[#659B35] hover:text-[#207041] text-sm font-medium"
@@ -354,7 +357,7 @@ export function AgendaScreen() {
             )}
           </div>
 
-          <div className="flex bg-gray-200 dark:bg-gray-700 rounded-full p-0.5">
+          <div className="flex bg-gray-200 dark:bg-gray-700 rounded-full p-0.5" data-tutorial="agenda-vista">
             <button
               onClick={() => {
                 const monday = getMonday(today);
@@ -394,7 +397,7 @@ export function AgendaScreen() {
 
       {viewMode === "month" && (
         <div className="flex-1 flex flex-col min-h-0">
-          <div className="bg-white dark:bg-gray-800 px-3 py-3 flex-shrink-0 max-h-[45vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 px-3 py-3 flex-shrink-0 max-h-[45vh] overflow-y-auto" data-tutorial="agenda-eventos">
             <div className="grid grid-cols-7 mb-1">
               {DAYS.map((d) => (
                 <div
@@ -527,7 +530,7 @@ export function AgendaScreen() {
 
           return (
             <div className="flex-1 flex flex-col min-h-0">
-              <div className="bg-white dark:bg-gray-800 px-3 py-3 flex-shrink-0">
+              <div className="bg-white dark:bg-gray-800 px-3 py-3 flex-shrink-0" data-tutorial="agenda-eventos">
                 <div className="grid grid-cols-7 mb-1">
                   {DAYS.map((d) => (
                     <div
@@ -754,10 +757,21 @@ export function AgendaScreen() {
             );
           })()}
       </PopupOverlay>
+      {showTutorial && (
+        <TutorialOverlay
+          steps={TUTORIALS.agenda.steps}
+          tutorialTitle={TUTORIALS.agenda.title}
+          tutorialKey="agenda"
+          onClose={() => setShowTutorial(false)}
+          onQuickGuide={() => { setShowTutorial(false); setShowGuide(true); }}
+        />
+      )}
+
       <ContextualHelp
         helpKey="agenda"
-        open={helpOpen}
-        onClose={() => setHelpOpen(false)}
+        open={showGuide}
+        onClose={() => setShowGuide(false)}
+        onStartTutorial={() => { setShowGuide(false); setShowTutorial(true); }}
       />
     </ScreenLayout>
   );

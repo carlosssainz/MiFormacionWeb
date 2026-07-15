@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { ScreenLayout } from "./ScreenLayout";
 import { ContextualHelp } from "./ContextualHelp";
+import { TutorialOverlay } from "./TutorialOverlay";
+import { TUTORIALS } from "../data/tutorialContent";
 import { useI18n } from "../context/I18nContext";
 import { useAuth } from "../context/AuthContext";
 
@@ -19,6 +21,7 @@ export function ExpedienteScreen() {
   const { t } = useI18n();
   const { pendingFirmaCount } = useAuth();
   const [helpOpen, setHelpOpen] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   const items = [
     {
@@ -75,12 +78,16 @@ export function ExpedienteScreen() {
 
 
       <div className="px-4 space-y-3 pb-4">
-        {items.map((item) => (
+        {items.map((item) => {
+          const tutorialAttr = item.id === "cursos" ? "expediente-cursos" : item.id === "habilitaciones" ? "expediente-habilitaciones" : undefined;
+          return (
           <button
             key={item.id}
             onClick={() => navigate(item.screen)}
+            data-tutorial={tutorialAttr}
             className="w-full bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow flex items-center gap-5 text-left active:opacity-90"
           >
+          
             <div className="w-14 h-14 bg-[#659B35] dark:bg-[#85C34A] rounded-xl flex items-center justify-center text-white shrink-0">
               {item.icon}
             </div>
@@ -94,11 +101,13 @@ export function ExpedienteScreen() {
             </div>
             <ChevronRight size={22} className="text-gray-400 shrink-0" />
           </button>
-        ))}
+          );
+        })}
       </div>
 
       <div className="px-4 pb-4">
         <button
+          data-tutorial="expediente-descarga"
           onClick={() => {
             const name = "EXPEDIENTE_COMPLETO.pdf";
             const blob = new Blob(
@@ -118,10 +127,21 @@ export function ExpedienteScreen() {
         </button>
       </div>
 
+      {showTutorial && TUTORIALS.expediente && (
+        <TutorialOverlay
+          steps={TUTORIALS.expediente.steps}
+          tutorialTitle={TUTORIALS.expediente.title}
+          tutorialKey="expediente"
+          onClose={() => setShowTutorial(false)}
+          onQuickGuide={() => { setShowTutorial(false); setHelpOpen(true); }}
+        />
+      )}
+
       <ContextualHelp
         helpKey="expediente"
         open={helpOpen}
         onClose={() => setHelpOpen(false)}
+        onStartTutorial={() => { setHelpOpen(false); setShowTutorial(true); }}
       />
     </ScreenLayout>
   );

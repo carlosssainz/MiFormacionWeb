@@ -16,6 +16,9 @@ import { PanelCard } from "./PanelCard";
 import { DetailCard } from "./DetailCard";
 import { PopupOverlay } from "./PopupOverlay";
 import { EmptyState } from "./EmptyState";
+import { ContextualHelp } from "./ContextualHelp";
+import { TutorialOverlay } from "./TutorialOverlay";
+import { TUTORIALS } from "../data/tutorialContent";
 import { useAuth } from "../context/AuthContext";
 import { useI18n } from "../context/I18nContext";
 
@@ -33,6 +36,8 @@ export function AvisosScreen() {
   const [tipoFilter, setTipoFilter] = useState("");
   const [estadoFilter, setEstadoFilter] = useState("Todos");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
   const [selectedAvisoId, setSelectedAvisoId] = useState(null);
 
   const CATEGORIA_CONFIG = {
@@ -161,7 +166,8 @@ export function AvisosScreen() {
   };
 
   return (
-    <ScreenLayout headerMode="top" scrollable={false} helpKey="avisos" hideSearch>
+    <ScreenLayout headerMode="top" scrollable={false} hideSearch
+      onHelpClick={() => setShowGuide(true)}>
       <div className="flex flex-col flex-1 min-h-0">
         <div className="px-4 pt-4 pb-2 flex-shrink-0">
           <div className="flex items-center gap-2 mb-3">
@@ -174,6 +180,13 @@ export function AvisosScreen() {
             <h1 className="text-2xl font-bold text-[#207041] dark:text-[#85C34A]">
               {t("avisos.title")}
             </h1>
+            <button
+              onClick={() => setShowGuide(true)}
+              className="ml-auto w-7 h-7 rounded-full border border-[#659B35] dark:border-[#85C34A] text-[#659B35] dark:text-[#85C34A] hover:bg-[#659B35] hover:text-white dark:hover:bg-[#85C34A] dark:hover:text-gray-900 flex items-center justify-center transition-colors shrink-0 text-xs font-bold"
+              aria-label="Ayuda contextual"
+            >
+              ?
+            </button>
           </div>
           <div className="relative">
             <Search
@@ -190,7 +203,7 @@ export function AvisosScreen() {
           </div>
         </div>
 
-        <div className="px-4 pb-2 flex gap-2 flex-shrink-0">
+        <div className="px-4 pb-2 flex gap-2 flex-shrink-0" data-tutorial="avisos-filter-area">
         <div className="relative flex-1">
           <select
             value={tipoFilter}
@@ -227,8 +240,8 @@ export function AvisosScreen() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-scroll pb-16 px-4 pt-1 scroll-container">
-        <div className="min-h-[calc(100%+1px)]">
+      <div className="flex-1 overflow-y-scroll pb-16 lg:pb-4 px-4 pt-1 scroll-container" data-tutorial="avisos-list">
+        <div className="min-h-[calc(100%+1px)] lg:max-w-5xl lg:mx-auto">
         {avisosFiltrados.length === 0 ? (
           <EmptyState
             icon={<Search size={48} />}
@@ -353,6 +366,22 @@ export function AvisosScreen() {
             );
           })()}
       </PopupOverlay>
+      {showTutorial && (
+        <TutorialOverlay
+          steps={TUTORIALS.avisos.steps}
+          tutorialTitle={TUTORIALS.avisos.title}
+          tutorialKey="avisos"
+          onClose={() => setShowTutorial(false)}
+          onQuickGuide={() => { setShowTutorial(false); setShowGuide(true); }}
+        />
+      )}
+
+      <ContextualHelp
+        helpKey="avisos"
+        open={showGuide}
+        onClose={() => setShowGuide(false)}
+        onStartTutorial={() => { setShowGuide(false); setShowTutorial(true); }}
+      />
     </ScreenLayout>
   );
 }

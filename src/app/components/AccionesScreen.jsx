@@ -17,6 +17,9 @@ import { PanelCard } from "./PanelCard";
 import { DetailCard } from "./DetailCard";
 import { PopupOverlay } from "./PopupOverlay";
 import { EmptyState } from "./EmptyState";
+import { ContextualHelp } from "./ContextualHelp";
+import { TutorialOverlay } from "./TutorialOverlay";
+import { TUTORIALS } from "../data/tutorialContent";
 import { useAuth } from "../context/AuthContext";
 import { useI18n } from "../context/I18nContext";
 
@@ -36,6 +39,8 @@ export function AccionesScreen() {
   const [activeTab, setActiveTab] = useState("pendientes");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedAccionId, setSelectedAccionId] = useState(null);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
 
   const pendientes = useMemo(
     () => acciones.filter((a) => a.estado === "pendiente" && (a.tipo !== "mostrar_qr" || role === "formador")),
@@ -101,8 +106,8 @@ export function AccionesScreen() {
     <ScreenLayout
       headerMode="top"
       scrollable={false}
-      helpKey="acciones"
       hideSearch
+      onHelpClick={() => setShowGuide(true)}
     >
       <div className="px-4 pt-4 pb-2">
         <div className="flex items-center gap-2 mb-3">
@@ -115,6 +120,13 @@ export function AccionesScreen() {
           <h1 className="text-2xl font-bold text-[#207041] dark:text-[#85C34A]">
             Acciones Pendientes
           </h1>
+          <button
+            onClick={() => setShowGuide(true)}
+            className="ml-auto w-7 h-7 rounded-full border border-[#659B35] dark:border-[#85C34A] text-[#659B35] dark:text-[#85C34A] hover:bg-[#659B35] hover:text-white dark:hover:bg-[#85C34A] dark:hover:text-gray-900 flex items-center justify-center transition-colors shrink-0 text-xs font-bold"
+            aria-label="Ayuda contextual"
+          >
+            ?
+          </button>
         </div>
         <div className="relative">
           <Search
@@ -126,12 +138,13 @@ export function AccionesScreen() {
             placeholder="Buscar acciones..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            data-tutorial="acciones-search"
             className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-800 rounded-xl border border-[#CCCCCC] dark:border-gray-600 text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E3EB7A] transition-shadow"
           />
         </div>
       </div>
 
-      <div className="px-4 pb-2 flex gap-2">
+      <div className="px-4 pb-2 flex gap-2" data-tutorial="acciones-tabs">
         <button
           onClick={() => setActiveTab("pendientes")}
           className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
@@ -154,7 +167,7 @@ export function AccionesScreen() {
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-scroll pb-16 px-4 pt-1 scroll-container">
+      <div className="flex-1 overflow-y-scroll pb-16 px-4 pt-1 scroll-container" data-tutorial="acciones-list">
         <div className="min-h-[calc(100%+1px)]">
         {activeTab === "pendientes" && (
           <>
@@ -328,6 +341,23 @@ export function AccionesScreen() {
             );
           })()}
       </PopupOverlay>
+
+      {showTutorial && (
+        <TutorialOverlay
+          steps={TUTORIALS.acciones.steps}
+          tutorialTitle={TUTORIALS.acciones.title}
+          tutorialKey="acciones"
+          onClose={() => setShowTutorial(false)}
+          onQuickGuide={() => { setShowTutorial(false); setShowGuide(true); }}
+        />
+      )}
+
+      <ContextualHelp
+        helpKey="acciones"
+        open={showGuide}
+        onClose={() => setShowGuide(false)}
+        onStartTutorial={() => { setShowGuide(false); setShowTutorial(true); }}
+      />
     </ScreenLayout>
   );
 }

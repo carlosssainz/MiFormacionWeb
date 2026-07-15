@@ -23,6 +23,8 @@ import {
   GripVertical,
 } from "lucide-react";
 import { ContextualHelp } from "./ContextualHelp";
+import { TutorialOverlay } from "./TutorialOverlay";
+import { TUTORIALS } from "../data/tutorialContent";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -36,6 +38,7 @@ import { DetailCard } from "./DetailCard";
 import { PopupOverlay } from "./PopupOverlay";
 import { useAuth } from "../context/AuthContext";
 import { useI18n } from "../context/I18nContext";
+import { useTutorial } from "../context/TutorialContext";
 import { ENCUESTAS } from "../data/mockData";
 
 
@@ -43,19 +46,45 @@ function ToolButton({ icon, label, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`bg-[#659B35] hover:bg-[#207041] dark:bg-[#85C34A] dark:hover:bg-[#006633] text-white rounded-lg flex flex-col items-center justify-center gap-2 transition-colors w-full h-24 ${!onClick ? "opacity-80" : ""}`}
+      className={`bg-[#659B35] hover:bg-[#207041] dark:bg-[#85C34A] dark:hover:bg-[#006633] text-white rounded-lg flex flex-col items-center justify-center gap-2 transition-all w-full h-24 lg:bg-white lg:dark:bg-gray-800 lg:border-2 lg:border-[#659B35]/30 lg:dark:border-[#85C34A]/30 lg:hover:border-[#659B35] lg:dark:hover:border-[#85C34A] lg:hover:bg-gray-50 lg:dark:hover:bg-gray-700/50 lg:shadow-sm lg:hover:shadow-md lg:text-[#659B35] lg:dark:text-[#85C34A] lg:h-32 lg:gap-3 lg:hover:-translate-y-0.5 ${!onClick ? "opacity-80" : ""}`}
     >
-      {icon}
-      <span className="text-sm uppercase">{label}</span>
+      <div className="lg:scale-125">{icon}</div>
+      <span className="text-sm uppercase lg:text-base lg:font-semibold">{label}</span>
     </button>
   );
 }
 
 export function HomeScreen() {
+  const TUTORIAL_QUEUE = ["home-topbar", "home-sections", "home-bottomnav"];
+
   const { role, acciones, completarAccion } = useAuth();
   const navigate = useNavigate();
   const { t } = useI18n();
-  const [helpOpen, setHelpOpen] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(null);
+  const [showGuide, setShowGuide] = useState(false);
+  const { firstVisit, dismissFirstVisit } = useTutorial();
+  const [autoShowDone, setAutoShowDone] = useState(false);
+
+  useEffect(() => {
+    if (firstVisit && !autoShowDone) {
+      setShowTutorial("home-topbar");
+      setAutoShowDone(true);
+    }
+  }, [firstVisit, autoShowDone]);
+
+  const handleTutorialClose = () => {
+    const idx = TUTORIAL_QUEUE.indexOf(showTutorial);
+    if (idx < TUTORIAL_QUEUE.length - 1) {
+      setShowTutorial(TUTORIAL_QUEUE[idx + 1]);
+    } else {
+      setShowTutorial(null);
+      dismissFirstVisit();
+    }
+  };
+
+  const currentTutorial = showTutorial ? TUTORIALS[showTutorial] : null;
+  const currentTutorialIdx = showTutorial ? TUTORIAL_QUEUE.indexOf(showTutorial) : -1;
+  const celebrateButtonText = currentTutorialIdx === TUTORIAL_QUEUE.length - 1 ? "Volver al inicio" : "Siguiente tutorial →";
   const [selectedAccionHomeId, setSelectedAccionHomeId] = useState(null);
   const [indices, setIndices] = useState({
     servicios: 0,
@@ -337,11 +366,22 @@ export function HomeScreen() {
     autoplaySpeed: 5000,
   };
 
+  const desktopNewsSliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 600,
+    slidesToShow: 2,
+    slidesToScroll: 1,
+    arrows: false,
+    autoplay: true,
+    autoplaySpeed: 5000,
+  };
+
   const sectionRefs = useRef({});
 
   function renderSectionById(sectionId, index) {
     const isOver = dragOver === index;
-    const baseClasses = "bg-white dark:bg-gray-800 px-4 py-3 mb-2 transition-opacity duration-200";
+    const baseClasses = "bg-white dark:bg-gray-800 px-4 py-3 mb-2 transition-opacity duration-200 lg:px-6 lg:py-5 lg:mb-4 lg:rounded-xl lg:shadow-sm lg:border lg:border-gray-100 lg:dark:border-gray-700";
     const dragClasses = isOver ? "opacity-50 ring-2 ring-[#659B35] dark:ring-[#85C34A] rounded-xl" : "";
 
     switch (sectionId) {
@@ -360,100 +400,133 @@ export function HomeScreen() {
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
             className={`${baseClasses} ${dragClasses}`}
+            data-tutorial="home-section-news"
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2 min-w-0">
-                <GripVertical size={16} className="text-gray-300 dark:text-gray-600 shrink-0 cursor-grab active:cursor-grabbing" />
-                <h2 className="font-semibold text-gray-800 dark:text-gray-100 truncate">
+                <GripVertical size={16} className="text-gray-300 dark:text-gray-600 shrink-0 cursor-grab active:cursor-grabbing" data-tutorial="grip" />
+                <h2 className="font-semibold text-gray-800 dark:text-gray-100 truncate lg:text-xl">
                   {t("home.newsTitle")}
                 </h2>
               </div>
               <button
                 onClick={() => navigate("/noticias")}
-                className="text-[#659B35] dark:text-[#85C34A] text-sm flex items-center gap-1 hover:text-[#207041] dark:hover:text-[#006633] transition-colors"
+                className="text-[#659B35] dark:text-[#85C34A] text-sm lg:text-base lg:font-semibold flex items-center gap-1 hover:text-[#207041] dark:hover:text-[#006633] transition-colors"
               >
                 {t("home.viewAll")}
                 <ChevronRight size={16} />
               </button>
             </div>
-            <Slider {...newsSliderSettings} className="news-slider">
-              <div>
-                <button
-                  onClick={() =>
-                    navigate("/noticias", {
-                      state: { openNoticiaId: 1, fromInicio: true },
-                    })
-                  }
-                  className="relative rounded-lg overflow-hidden h-32 bg-gray-200 w-full text-left"
-                >
-                  <img
-                    src={carrusel1}
-                    alt={t("home.news1Title")}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
-                    <div className="text-white text-sm font-medium">{t("home.news1Title")}</div>
+            <div className="lg:hidden">
+              <Slider {...newsSliderSettings} className="news-slider">
+                <div>
+                  <button
+                    onClick={() =>
+                      navigate("/noticias", {
+                        state: { openNoticiaId: 1, fromInicio: true },
+                      })
+                    }
+                    className="relative rounded-lg overflow-hidden h-32 bg-gray-200 w-full text-left"
+                  >
+                    <img
+                      src={carrusel1}
+                      alt={t("home.news1Title")}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
+                      <div className="text-white text-sm font-medium">{t("home.news1Title")}</div>
+                    </div>
+                  </button>
+                </div>
+                <div>
+                  <button
+                    onClick={() =>
+                      navigate("/noticias", {
+                        state: { openNoticiaId: 2, fromInicio: true },
+                      })
+                    }
+                    className="relative rounded-lg overflow-hidden h-32 bg-gray-200 w-full text-left"
+                  >
+                    <img
+                      src={carrusel2}
+                      alt={t("home.news2Title")}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
+                      <div className="text-white text-sm font-medium">{t("home.news2Title")}</div>
+                    </div>
+                  </button>
+                </div>
+                <div>
+                  <button
+                    onClick={() =>
+                      navigate("/noticias", {
+                        state: { openNoticiaId: 3, fromInicio: true },
+                      })
+                    }
+                    className="relative rounded-lg overflow-hidden h-32 bg-gray-200 w-full text-left"
+                  >
+                    <img
+                      src={carrusel3}
+                      alt={t("home.news3Title")}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
+                      <div className="text-white text-sm font-medium">{t("home.news3Title")}</div>
+                    </div>
+                  </button>
+                </div>
+                <div>
+                  <button
+                    onClick={() =>
+                      navigate("/noticias", {
+                        state: { openNoticiaId: 4, fromInicio: true },
+                      })
+                    }
+                    className="relative rounded-lg overflow-hidden h-32 bg-gray-200 w-full text-left"
+                  >
+                    <img
+                      src={carrusel4}
+                      alt={t("home.news4Title")}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
+                      <div className="text-white text-sm font-medium">{t("home.news4Title")}</div>
+                    </div>
+                  </button>
+                </div>
+              </Slider>
+            </div>
+            <div className="hidden lg:block">
+              <Slider {...desktopNewsSliderSettings} className="news-slider-desktop">
+                {[
+                  { id: 1, img: carrusel1, titleKey: "home.news1Title" },
+                  { id: 2, img: carrusel2, titleKey: "home.news2Title" },
+                  { id: 3, img: carrusel3, titleKey: "home.news3Title" },
+                  { id: 4, img: carrusel4, titleKey: "home.news4Title" },
+                ].map((news) => (
+                  <div key={news.id} className="px-1">
+                    <button
+                      onClick={() =>
+                        navigate("/noticias", {
+                          state: { openNoticiaId: news.id, fromInicio: true },
+                        })
+                      }
+                      className="relative rounded-lg overflow-hidden bg-gray-200 w-full text-left hover:ring-2 hover:ring-[#659B35] transition-all group aspect-video"
+                    >
+                      <img
+                        src={news.img}
+                        alt={t(news.titleKey)}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-4">
+                        <div className="text-white text-base font-bold">{t(news.titleKey)}</div>
+                      </div>
+                    </button>
                   </div>
-                </button>
-              </div>
-              <div>
-                <button
-                  onClick={() =>
-                    navigate("/noticias", {
-                      state: { openNoticiaId: 2, fromInicio: true },
-                    })
-                  }
-                  className="relative rounded-lg overflow-hidden h-32 bg-gray-200 w-full text-left"
-                >
-                  <img
-                    src={carrusel2}
-                    alt={t("home.news2Title")}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
-                    <div className="text-white text-sm font-medium">{t("home.news2Title")}</div>
-                  </div>
-                </button>
-              </div>
-              <div>
-                <button
-                  onClick={() =>
-                    navigate("/noticias", {
-                      state: { openNoticiaId: 3, fromInicio: true },
-                    })
-                  }
-                  className="relative rounded-lg overflow-hidden h-32 bg-gray-200 w-full text-left"
-                >
-                  <img
-                    src={carrusel3}
-                    alt={t("home.news3Title")}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
-                    <div className="text-white text-sm font-medium">{t("home.news3Title")}</div>
-                  </div>
-                </button>
-              </div>
-              <div>
-                <button
-                  onClick={() =>
-                    navigate("/noticias", {
-                      state: { openNoticiaId: 4, fromInicio: true },
-                    })
-                  }
-                  className="relative rounded-lg overflow-hidden h-32 bg-gray-200 w-full text-left"
-                >
-                  <img
-                    src={carrusel4}
-                    alt={t("home.news4Title")}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
-                    <div className="text-white text-sm font-medium">{t("home.news4Title")}</div>
-                  </div>
-                </button>
-              </div>
-            </Slider>
+                ))}
+              </Slider>
+            </div>
           </div>
         );
 
@@ -472,25 +545,26 @@ export function HomeScreen() {
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
             className={`${baseClasses} ${dragClasses}`}
+            data-tutorial="home-section-pending-actions"
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2 min-w-0">
-                <GripVertical size={16} className="text-gray-300 dark:text-gray-600 shrink-0 cursor-grab active:cursor-grabbing" />
+                <GripVertical size={16} className="text-gray-300 dark:text-gray-600 shrink-0 cursor-grab active:cursor-grabbing" data-tutorial="grip" />
                 <button
                   onClick={() => toggleCollapsed("pending-actions")}
-                  className="flex items-center gap-2 text-gray-800 dark:text-gray-100 font-semibold"
+                  className="flex items-center gap-2 text-gray-800 dark:text-gray-100 font-semibold lg:text-xl"
                 >
                   {t("home.pendingActions")}
                 <ChevronDown
                   size={18}
-                  className={`transition-transform duration-300 ${collapsed["pending-actions"] ? "-rotate-90" : "rotate-0"}`}
+                  className={`transition-transform duration-300 ${collapsed["pending-actions"] ? "-rotate-90" : "rotate-0"} lg:w-5 lg:h-5`}
                 />
               </button>
               </div>
               {pendingAcciones.length > 0 && (
                 <button
                   onClick={() => navigate("/acciones")}
-                  className="text-[#659B35] dark:text-[#85C34A] text-sm flex items-center gap-1 hover:text-[#207041] dark:hover:text-[#006633]"
+                  className="text-[#659B35] dark:text-[#85C34A] text-sm lg:text-base lg:font-semibold flex items-center gap-1 hover:text-[#207041] dark:hover:text-[#006633]"
                 >
                   Ver todas
                   <ChevronRight size={16} />
@@ -513,23 +587,23 @@ export function HomeScreen() {
                         <button
                           key={accion.id}
                           onClick={() => setSelectedAccionHomeId(accion.id)}
-                          className="w-full flex items-center gap-3 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl p-3 transition-colors text-left"
+                          className="w-full flex items-center gap-3 lg:gap-4 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl p-3 lg:p-4 transition-colors text-left"
                         >
                           <div
-                            className="w-10 h-10 rounded-lg flex items-center justify-center text-white flex-shrink-0"
+                            className="w-10 h-10 lg:w-12 lg:h-12 rounded-lg flex items-center justify-center text-white flex-shrink-0"
                             style={{ backgroundColor: color }}
                           >
-                            <IconComponent size={20} />
+                            <div className="lg:scale-110"><IconComponent size={20} /></div>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">
+                            <p className="text-sm lg:text-base font-semibold text-gray-800 dark:text-gray-100 truncate">
                               {accion.titulo}
                             </p>
-                            <p className="text-xs text-gray-500 truncate">
+                            <p className="text-xs lg:text-sm text-gray-500 truncate">
                               {accion.descripcion}
                             </p>
                           </div>
-                          <span className="shrink-0 bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <span className="shrink-0 bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-300 text-[10px] lg:text-xs font-bold px-2 lg:px-3 py-0.5 rounded-full flex items-center gap-1">
                             <Clock size={10} />
                             Pendiente
                           </span>
@@ -565,25 +639,26 @@ export function HomeScreen() {
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
             className={`${baseClasses} ${dragClasses}`}
+            data-tutorial={`home-section-${key}`}
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2 min-w-0">
-                <GripVertical size={16} className="text-gray-300 dark:text-gray-600 shrink-0 cursor-grab active:cursor-grabbing" />
+                <GripVertical size={16} className="text-gray-300 dark:text-gray-600 shrink-0 cursor-grab active:cursor-grabbing" data-tutorial="grip" />
                 <button
                   onClick={() => toggleCollapsed(key)}
-                  className="flex items-center gap-2 text-gray-800 dark:text-gray-100 font-semibold"
+                  className="flex items-center gap-2 text-gray-800 dark:text-gray-100 font-semibold lg:text-xl"
                 >
                   {section.title}
                 <ChevronDown
                   size={18}
-                  className={`transition-transform duration-300 ${isCollapsed ? "-rotate-90" : "rotate-0"}`}
+                  className={`transition-transform duration-300 ${isCollapsed ? "-rotate-90" : "rotate-0"} lg:w-5 lg:h-5`}
                 />
               </button>
               </div>
               {section.verTodoPath !== "/evaluaciones" && (
                 <button
                   onClick={() => navigate(section.verTodoPath)}
-                  className="text-[#659B35] dark:text-[#85C34A] text-sm flex items-center gap-1 hover:text-[#207041] dark:hover:text-[#006633]"
+                  className="text-[#659B35] dark:text-[#85C34A] text-sm lg:text-base lg:font-semibold flex items-center gap-1 hover:text-[#207041] dark:hover:text-[#006633]"
                 >
                   {section.verTodoPath === "/captura-necesidades"
                     ? t("home.captureNeeds")
@@ -595,62 +670,74 @@ export function HomeScreen() {
             {!isCollapsed &&
               (section.type === "carousel" ? (
                 <>
-                  <Slider {...toolSliderSettings(key, count)} className="tools-slider">
+                  <div className="lg:hidden">
+                    <Slider {...toolSliderSettings(key, count)} className="tools-slider">
+                      {section.items.map((item, i) => (
+                        <div key={i} className="px-1">
+                          <ToolButton
+                            icon={item.icon}
+                            label={item.label}
+                            onClick={() => navigate(item.path)}
+                          />
+                        </div>
+                      ))}
+                    </Slider>
+                    <div className="w-full h-1 bg-gray-200 dark:bg-gray-700 rounded-full mt-2 overflow-hidden">
+                      <div
+                        className="h-full bg-[#659B35] dark:bg-[#85C34A] rounded-full transition-all duration-500 ease-out"
+                        style={{ width: `${(currentIndex / Math.max(count - 1, 1)) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div className="hidden lg:grid lg:grid-cols-3 lg:gap-4">
                     {section.items.map((item, i) => (
-                      <div key={i} className="px-1">
-                        <ToolButton
-                          icon={item.icon}
-                          label={item.label}
-                          onClick={() => navigate(item.path)}
-                        />
-                      </div>
+                      <ToolButton
+                        key={i}
+                        icon={item.icon}
+                        label={item.label}
+                        onClick={() => navigate(item.path)}
+                      />
                     ))}
-                  </Slider>
-                  <div className="w-full h-1 bg-gray-200 dark:bg-gray-700 rounded-full mt-2 overflow-hidden">
-                    <div
-                      className="h-full bg-[#659B35] dark:bg-[#85C34A] rounded-full transition-all duration-500 ease-out"
-                      style={{ width: `${(currentIndex / Math.max(count - 1, 1)) * 100}%` }}
-                    />
                   </div>
                 </>
               ) : section.verTodoPath === "/captura-necesidades" ? (
-                <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex flex-col sm:flex-row gap-3 lg:gap-4">
                   {section.items.map((item, i) => (
                     <button
                       key={i}
                       onClick={() => navigate(item.path)}
-                      className="flex items-center gap-4 bg-[#659B35] hover:bg-[#207041] dark:bg-[#85C34A] dark:hover:bg-[#006633] rounded-xl p-4 transition-all text-left flex-1 group"
+                      className="flex items-center gap-4 lg:gap-5 bg-[#659B35] hover:bg-[#207041] dark:bg-[#85C34A] dark:hover:bg-[#006633] rounded-xl p-4 lg:p-5 transition-all text-left lg:flex-1 group"
                     >
-                      <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center text-white group-hover:scale-110 transition-transform shrink-0">
-                        {item.icon}
+                      <div className="w-10 h-10 lg:w-14 lg:h-14 rounded-lg bg-white/20 flex items-center justify-center text-white group-hover:scale-110 transition-transform shrink-0">
+                        <div className="lg:scale-125">{item.icon}</div>
                       </div>
-                      <span className="font-semibold text-white text-sm flex-1">
+                      <span className="font-semibold text-white text-sm lg:text-base flex-1">
                         {item.label}
                       </span>
                       <ChevronRight
                         size={18}
-                        className="text-white/70 group-hover:translate-x-1 transition-transform shrink-0"
+                        className="lg:w-5 lg:h-5 text-white/70 group-hover:translate-x-1 transition-transform shrink-0"
                       />
                     </button>
                   ))}
                 </div>
               ) : section.verTodoPath === "/evaluaciones" ? (
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 lg:grid-cols-2 gap-2 lg:gap-4">
                   {section.items.map((item, i) => (
                     <button
                       key={i}
                       onClick={() => navigate(item.path)}
-                      className="bg-white hover:bg-green-50 dark:bg-gray-800 dark:hover:bg-gray-700 border-2 border-[#659B35] dark:border-[#85C34A] text-[#659B35] dark:text-[#85C34A] rounded-xl flex flex-col items-center justify-center gap-2 transition-colors h-24"
+                      className="bg-white hover:bg-green-50 dark:bg-gray-800 dark:hover:bg-gray-700 border-2 border-[#659B35]/30 dark:border-[#85C34A]/30 hover:border-[#659B35] dark:hover:border-[#85C34A] text-[#659B35] dark:text-[#85C34A] rounded-xl flex flex-col items-center justify-center gap-2 lg:gap-3 transition-all h-24 lg:h-32 lg:shadow-sm lg:hover:shadow-md lg:hover:-translate-y-0.5"
                     >
-                      <div className="relative">
+                      <div className="relative lg:scale-125">
                         {item.icon}
                         {item.path === "/encuestas" && (
-                          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1">
+                          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] lg:text-xs font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1">
                             {encuestasPendientesCount}
                           </span>
                         )}
                       </div>
-                      <span className="text-sm uppercase">{item.label}</span>
+                      <span className="text-sm lg:text-base lg:font-semibold uppercase">{item.label}</span>
                     </button>
                   ))}
                 </div>
@@ -693,7 +780,7 @@ export function HomeScreen() {
   return (
     <ScreenLayout
       headerMode="top"
-      onHelpClick={() => setHelpOpen(true)}
+      onHelpClick={() => setShowGuide(true)}
     >
       {sectionOrder.map((sectionId, index) => renderSectionById(sectionId, index))}
 
@@ -765,10 +852,25 @@ export function HomeScreen() {
           })()}
       </PopupOverlay>
 
+      {showTutorial && currentTutorial && (
+        <TutorialOverlay
+          key={showTutorial}
+          steps={currentTutorial.steps}
+          tutorialTitle={currentTutorial.title}
+          tutorialKey={showTutorial}
+          autoShow={true}
+          onClose={handleTutorialClose}
+          onSkip={handleTutorialClose}
+          onQuickGuide={() => { setShowTutorial(null); setShowGuide(true); }}
+          celebrateButtonText={celebrateButtonText}
+        />
+      )}
+
       <ContextualHelp
         helpKey="home"
-        open={helpOpen}
-        onClose={() => setHelpOpen(false)}
+        open={showGuide}
+        onClose={() => setShowGuide(false)}
+        onStartTutorial={() => { setShowGuide(false); setShowTutorial("home-topbar"); }}
       />
     </ScreenLayout>
   );

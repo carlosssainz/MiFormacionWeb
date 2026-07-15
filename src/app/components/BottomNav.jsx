@@ -55,7 +55,7 @@ export function BottomNav() {
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-[#CCCCCC] dark:border-gray-700 px-4 pb-3 pt-2 z-10">
+      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-[#CCCCCC] dark:border-gray-700 px-4 pb-3 pt-2 z-10 lg:hidden">
         <div className="grid grid-cols-5 gap-2">
           {TABS.map((tab, i) => {
             if (tab === null) {
@@ -63,6 +63,7 @@ export function BottomNav() {
                 <div key="action-btn" className="flex flex-col items-center gap-1">
                   <button
                     onClick={() => setOpen(!open)}
+                    data-tutorial="home-bottom-solicitar"
                     className="w-14 h-14 rounded-full bg-[#207041] dark:bg-[#006633] text-white hover:bg-[#185a33] dark:hover:bg-[#004d26] shadow-xl flex items-center justify-center transition-colors -mt-5"
                     aria-label="Solicitar formación"
                   >
@@ -77,10 +78,17 @@ export function BottomNav() {
 
             const { path, key, icon: Icon } = tab;
             const isActive = location.pathname === path;
+            const dataTutorial =
+              path === "/" ? "home-bottom-inicio"
+              : path === "/cursos" ? "home-bottom-cursos"
+              : path === "/agenda" ? "home-bottom-agenda"
+              : path === "/expediente" ? "home-bottom-expediente"
+              : undefined;
             return (
               <button
                 key={path}
                 onClick={() => navigate(path)}
+                data-tutorial={dataTutorial}
                 aria-current={isActive ? "page" : undefined}
                 className={`flex flex-col items-center gap-1 py-2 transition-colors ${
                   isActive

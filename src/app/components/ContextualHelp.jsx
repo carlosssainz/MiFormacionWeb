@@ -1,8 +1,18 @@
-import { X } from "lucide-react";
+import { X, Check } from "lucide-react";
 import { HELP_CONTENT } from "../data/helpContent";
+import { useTutorial } from "../context/TutorialContext";
 
-export function ContextualHelp({ helpKey, open, onClose }) {
+const HELP_TO_TUTORIAL_KEY = {
+  settings: "ajustes",
+  perfil: "perfil",
+};
+
+export function ContextualHelp({ helpKey, open, onClose, onStartTutorial }) {
+  const { isComplete } = useTutorial();
   const content = HELP_CONTENT[helpKey];
+
+  const tutorialKey = HELP_TO_TUTORIAL_KEY[helpKey] || helpKey;
+  const tutorialDone = isComplete(tutorialKey);
 
   if (!content) return null;
 
@@ -35,7 +45,23 @@ export function ContextualHelp({ helpKey, open, onClose }) {
               </div>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
+            <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700 space-y-2">
+              {onStartTutorial && (
+                <>
+                  <button
+                    onClick={onStartTutorial}
+                    className="w-full py-2.5 border-2 border-[#659B35] dark:border-[#85C34A] text-[#659B35] dark:text-[#85C34A] hover:bg-[#659B35] hover:text-white dark:hover:bg-[#85C34A] dark:hover:text-gray-900 font-semibold rounded-xl transition-colors text-sm"
+                  >
+                    {tutorialDone ? "↻ Repetir tutorial interactivo" : "🎮 Iniciar tutorial interactivo"}
+                  </button>
+                  {tutorialDone && (
+                    <div className="flex items-center justify-center gap-1.5 text-xs font-medium text-[#65A83E]">
+                      <Check size={12} />
+                      Completado anteriormente
+                    </div>
+                  )}
+                </>
+              )}
               <button
                 onClick={onClose}
                 className="w-full py-2.5 bg-[#659B35] hover:bg-[#207041] dark:bg-[#85C34A] dark:hover:bg-[#006633] text-white font-semibold rounded-xl transition-colors text-sm"

@@ -17,6 +17,8 @@ import { CURRENT_USER_NAME, CURRENT_USER_PROFILE } from "../data/mockData";
 import perfilImg from "../imports/foto (7).jpg";
 import { ScreenLayout } from "./ScreenLayout";
 import { ContextualHelp } from "./ContextualHelp";
+import { TutorialOverlay } from "./TutorialOverlay";
+import { TUTORIALS } from "../data/tutorialContent";
 import { useAuth } from "../context/AuthContext";
 import { useI18n } from "../context/I18nContext";
 
@@ -25,7 +27,8 @@ export function ProfileScreen() {
   const { t } = useI18n();
   const navigate = useNavigate();
   const [contactosOpen, setContactosOpen] = useState(false);
-  const [helpOpen, setHelpOpen] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
   const p = CURRENT_USER_PROFILE;
 
   return (
@@ -47,7 +50,7 @@ export function ProfileScreen() {
             </h1>
           </div>
           <button
-            onClick={() => setHelpOpen(true)}
+            onClick={() => setShowGuide(true)}
             className="w-7 h-7 rounded-full border border-[#659B35] dark:border-[#85C34A] text-[#659B35] dark:text-[#85C34A] hover:bg-[#659B35] hover:text-white dark:hover:bg-[#85C34A] dark:hover:text-gray-900 flex items-center justify-center transition-colors shrink-0 text-xs font-bold"
             aria-label={t("settings.help")}
           >
@@ -105,7 +108,7 @@ export function ProfileScreen() {
           <ChevronRight size={20} className="text-gray-400 shrink-0" />
         </button>
 
-        <div className="bg-white dark:bg-gray-800 px-4 py-4 mb-4">
+        <div className="bg-white dark:bg-gray-800 px-4 py-4 mb-4" data-tutorial="perfil-datos">
           <h2 className="text-sm font-bold text-gray-800 dark:text-gray-100 mb-4 uppercase tracking-wide">
             {t("profile.employeeProfile")}
           </h2>
@@ -179,7 +182,7 @@ export function ProfileScreen() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 px-4 py-4 mb-4">
+        <div className="bg-white dark:bg-gray-800 px-4 py-4 mb-4" data-tutorial="perfil-contactos">
           <button
             onClick={() => setContactosOpen(!contactosOpen)}
             className="w-full text-sm font-bold text-center bg-[#207041] dark:bg-[#006633] text-white py-2 rounded-lg uppercase tracking-wide flex items-center justify-center gap-2 hover:bg-[#185a33] dark:hover:bg-[#004d26] transition-colors"
@@ -250,7 +253,7 @@ export function ProfileScreen() {
           )}
         </div>
 
-        <div className="px-4 pb-4">
+        <div className="px-4 pb-4" data-tutorial="perfil-acciones">
           <button
             onClick={logout}
             className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
@@ -268,9 +271,20 @@ export function ProfileScreen() {
 
       <ContextualHelp
         helpKey="perfil"
-        open={helpOpen}
-        onClose={() => setHelpOpen(false)}
+        open={showGuide}
+        onClose={() => setShowGuide(false)}
+        onStartTutorial={() => { setShowGuide(false); setShowTutorial(true); }}
       />
+
+      {showTutorial && (
+        <TutorialOverlay
+          steps={TUTORIALS.perfil.steps}
+          tutorialTitle={TUTORIALS.perfil.title}
+          tutorialKey="perfil"
+          onClose={() => setShowTutorial(false)}
+          onQuickGuide={() => { setShowTutorial(false); setShowGuide(true); }}
+        />
+      )}
     </ScreenLayout>
   );
 }

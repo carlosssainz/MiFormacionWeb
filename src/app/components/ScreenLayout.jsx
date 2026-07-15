@@ -4,6 +4,8 @@ import { ChevronLeft, Search } from "lucide-react";
 import { TopHeader } from "./TopHeader";
 import { BottomNav } from "./BottomNav";
 import { ContextualHelp } from "./ContextualHelp";
+import { TutorialOverlay } from "./TutorialOverlay";
+import { TUTORIALS } from "../data/tutorialContent";
 import { useI18n } from "../context/I18nContext";
 import { useAuth } from "../context/AuthContext";
 
@@ -19,11 +21,13 @@ export function ScreenLayout({
   helpKey,
   title,
   onHelpClick,
+  tutorialKey,
 }) {
   const navigate = useNavigate();
   const { t } = useI18n();
   const { setGlobalSearchOpen } = useAuth();
   const [helpOpen, setHelpOpen] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   return (
     <div className="size-full bg-[#F5F5F5] dark:bg-gray-900 flex flex-col">
@@ -55,9 +59,9 @@ export function ScreenLayout({
                 </p>
               )}
             </div>
-            {helpKey && (
+            {(helpKey || onHelpClick) && (
               <button
-                onClick={() => setHelpOpen(true)}
+                onClick={onHelpClick ?? (() => setHelpOpen(true))}
                 className="w-7 h-7 rounded-full border border-[#659B35] dark:border-[#85C34A] text-[#659B35] dark:text-[#85C34A] hover:bg-[#659B35] hover:text-white dark:hover:bg-[#85C34A] dark:hover:text-gray-900 flex items-center justify-center transition-colors shrink-0 text-xs font-bold"
                 aria-label="Ayuda contextual"
               >
@@ -78,12 +82,13 @@ export function ScreenLayout({
       )}
 
       {scrollable ? (
-        <div className="flex-1 overflow-y-scroll pb-16 scroll-container">
-          <div className="min-h-[calc(100%+1px)]">
+        <div className="flex-1 overflow-y-scroll pb-16 lg:pb-4 scroll-container">
+          <div className="min-h-[calc(100%+1px)] w-full lg:max-w-5xl lg:mx-auto">
             {headerMode === "top" && !hideSearch && (
-              <div className="px-4 py-1 flex items-center gap-2">
+              <div className="px-4 py-1 flex items-center gap-2 lg:hidden">
                 <button
                   onClick={() => setGlobalSearchOpen(true)}
+                  data-tutorial="home-top-search"
                   className="flex-1 flex items-center gap-2 h-8 px-3 rounded-lg bg-white dark:bg-gray-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-600 shadow-sm transition-colors text-left overflow-hidden"
                 >
                   <Search size={14} className="shrink-0 text-gray-400" />
@@ -106,9 +111,10 @@ export function ScreenLayout({
       ) : (
         <div className="flex-1 flex flex-col min-h-0">
           {headerMode === "top" && !hideSearch && (
-            <div className="px-4 py-1 flex items-center gap-2">
+            <div className="px-4 py-1 flex items-center gap-2 lg:hidden">
               <button
                 onClick={() => setGlobalSearchOpen(true)}
+                data-tutorial="home-top-search"
                 className="flex-1 flex items-center gap-2 h-8 px-3 rounded-lg bg-white dark:bg-gray-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-600 shadow-sm transition-colors text-left overflow-hidden"
               >
                 <Search size={14} className="shrink-0 text-gray-400" />
@@ -131,11 +137,22 @@ export function ScreenLayout({
 
       {!hideBottomNav && <BottomNav />}
 
-      {headerMode === "back" && helpKey && (
+      {(headerMode === "back" || headerMode === "top") && helpKey && !onHelpClick && (
         <ContextualHelp
           helpKey={helpKey}
           open={helpOpen}
           onClose={() => setHelpOpen(false)}
+          onStartTutorial={tutorialKey ? () => { setHelpOpen(false); setShowTutorial(true); } : undefined}
+        />
+      )}
+
+      {tutorialKey && showTutorial && TUTORIALS[tutorialKey] && (
+        <TutorialOverlay
+          steps={TUTORIALS[tutorialKey].steps}
+          tutorialTitle={TUTORIALS[tutorialKey].title}
+          tutorialKey={tutorialKey}
+          onClose={() => setShowTutorial(false)}
+          onQuickGuide={() => { setShowTutorial(false); setHelpOpen(true); }}
         />
       )}
     </div>

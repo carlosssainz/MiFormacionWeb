@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useI18n } from "../context/I18nContext";
 import { useParams, useNavigate } from "react-router-dom";
+import { ContextualHelp } from "./ContextualHelp";
+import { TutorialOverlay } from "./TutorialOverlay";
+import { TUTORIALS } from "../data/tutorialContent";
 import {
   BookOpen,
   Calendar,
@@ -35,9 +38,9 @@ function CourseIcon({ icon, size = 24 }) {
   return <>{icons[icon] ?? <BookOpen size={size} />}</>;
 }
 
-function InfoSection({ icon: Icon, title, children }) {
+function InfoSection({ icon: Icon, title, children, ...rest }) {
   return (
-    <div className="mx-4 mb-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+    <div className="mx-4 mb-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden" {...rest}>
       <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 dark:border-gray-700">
         <Icon size={16} className="text-[#659B35]" />
         <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100">
@@ -471,6 +474,8 @@ export function CursoDetalleScreen() {
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [confirmCancel, setConfirmCancel] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
 
   const gestorEmail = `${detalle.gestor
     .toLowerCase()
@@ -488,7 +493,7 @@ export function CursoDetalleScreen() {
     <ScreenLayout
       headerMode="back"
       backTitle={curso.title}
-      helpKey="curso-detalle"
+      onHelpClick={() => setShowGuide(true)}
     >
       <div className="pb-6">
         <div className="bg-gradient-to-br from-[#659B35] to-[#207041] p-5 text-white">
@@ -659,7 +664,7 @@ export function CursoDetalleScreen() {
           </div>
         )}
 
-        <InfoSection icon={BookOpen} title={t("courseDetail.courseData")}>
+        <InfoSection icon={BookOpen} title={t("courseDetail.courseData")} data-tutorial="detalle-info">
           <InfoField
             label={t("courseDetail.idCatalog")}
             value={detalle.idTipoActo}
@@ -683,7 +688,7 @@ export function CursoDetalleScreen() {
           />
         </InfoSection>
 
-        <InfoSection icon={Calendar} title={t("courseDetail.calendar")}>
+        <InfoSection icon={Calendar} title={t("courseDetail.calendar")} data-tutorial="detalle-calendario">
           <InfoField
             label={t("courseDetail.start")}
             value={detalle.fechaInicio}
@@ -738,7 +743,7 @@ export function CursoDetalleScreen() {
           />
         </InfoSection>
 
-        <div className="px-4 space-y-2 mt-6">
+        <div className="px-4 space-y-2 mt-6" data-tutorial="detalle-acciones">
           <button
             onClick={() => {
               setContactModalOpen(true);
@@ -761,6 +766,7 @@ export function CursoDetalleScreen() {
 
           <button
             onClick={() => setTemarioOpen(!temarioOpen)}
+            data-tutorial="detalle-temario"
             className="w-full flex items-center gap-3 px-4 py-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             <div className="w-9 h-9 bg-[#F5F5F5] dark:bg-gray-700 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -942,6 +948,22 @@ export function CursoDetalleScreen() {
           </div>
         )}
       </div>
+      {showTutorial && (
+        <TutorialOverlay
+          steps={TUTORIALS["curso-detalle"].steps}
+          tutorialTitle={TUTORIALS["curso-detalle"].title}
+          tutorialKey="curso-detalle"
+          onClose={() => setShowTutorial(false)}
+          onQuickGuide={() => { setShowTutorial(false); setShowGuide(true); }}
+        />
+      )}
+
+      <ContextualHelp
+        helpKey="curso-detalle"
+        open={showGuide}
+        onClose={() => setShowGuide(false)}
+        onStartTutorial={() => { setShowGuide(false); setShowTutorial(true); }}
+      />
     </ScreenLayout>
   );
 }

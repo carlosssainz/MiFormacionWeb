@@ -22,6 +22,8 @@ import {
 import { CURSOS_DATA, CONVOCATORIAS } from "../data/mockData";
 import { ScreenLayout } from "./ScreenLayout";
 import { ContextualHelp } from "./ContextualHelp";
+import { TutorialOverlay } from "./TutorialOverlay";
+import { TUTORIALS } from "../data/tutorialContent";
 
 function DonutChart({ progress, size = 34 }) {
   const stroke = 3;
@@ -325,7 +327,8 @@ export function CursosScreen() {
   const [showSort, setShowSort] = useState(false);
   const [necesidadCurso, setNecesidadCurso] = useState(null);
   const [necesidadSuccess, setNecesidadSuccess] = useState(false);
-  const [helpOpen, setHelpOpen] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -538,7 +541,7 @@ export function CursosScreen() {
   return (
     <ScreenLayout
       headerMode="top"
-      onHelpClick={() => setHelpOpen(true)}
+      onHelpClick={() => setShowGuide(true)}
     >
       {searchParams.get("tab") && (
         <div className="px-4 pt-3 pb-1">
@@ -552,7 +555,7 @@ export function CursosScreen() {
         </div>
       )}
 
-      <div className="px-4 pb-2 overflow-x-auto">
+      <div className="px-4 pb-2 overflow-x-auto" data-tutorial="cursos-tabs">
         <div className="flex border-b border-[#CCCCCC] dark:border-gray-700 min-w-fit gap-4">
           {["mis-cursos", "proximos", "catalogo"].map((tab) => {
             const labels = {
@@ -580,7 +583,7 @@ export function CursosScreen() {
         </div>
       </div>
 
-      <div className="px-4 pb-3 flex items-center gap-2">
+      <div className="px-4 pb-3 flex items-center gap-2" data-tutorial="cursos-filters">
         <div className="relative flex-1">
           <Search
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"
@@ -791,16 +794,17 @@ export function CursosScreen() {
         </div>
       )}
 
-      <div className="px-4 space-y-3 pb-4">
+      <div className="px-4 pb-4 space-y-3 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
         {filteredCursos.length === 0 ? (
-          <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-8">
+          <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-8 lg:col-span-2">
             {t("courses.noResults")}
           </p>
         ) : (
-          filteredCursos.map((curso) => (
+          filteredCursos.map((curso, ci) => (
             <div
               key={curso.id}
               onClick={() => handleCursoClick(curso.id)}
+              data-tutorial={ci === 0 ? "cursos-card" : undefined}
               className={`bg-gradient-to-br from-[#659B35] to-[#207041] rounded-xl p-3.5 text-white shadow-sm ${"cursor-pointer hover:shadow-md active:scale-[0.98]"} transition-all`}
             >
               <div className="flex items-start gap-3 mb-2">
@@ -1093,10 +1097,21 @@ export function CursosScreen() {
           </div>
         </div>
       )}
+      {showTutorial && (
+        <TutorialOverlay
+          steps={TUTORIALS.cursos.steps}
+          tutorialTitle={TUTORIALS.cursos.title}
+          tutorialKey="cursos"
+          onClose={() => setShowTutorial(false)}
+          onQuickGuide={() => { setShowTutorial(false); setShowGuide(true); }}
+        />
+      )}
+
       <ContextualHelp
         helpKey="cursos"
-        open={helpOpen}
-        onClose={() => setHelpOpen(false)}
+        open={showGuide}
+        onClose={() => setShowGuide(false)}
+        onStartTutorial={() => { setShowGuide(false); setShowTutorial(true); }}
       />
     </ScreenLayout>
   );

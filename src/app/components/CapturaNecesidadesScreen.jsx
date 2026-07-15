@@ -108,8 +108,9 @@ export function CapturaNecesidadesScreen() {
       headerMode="back"
       backTitle={t("needs.title")}
       helpKey="captura-necesidades"
+      tutorialKey="captura-necesidades"
     >
-      <div className="px-4 pt-3 pb-1">
+      <div className="px-4 pt-3 pb-1" data-tutorial="necesidades-year">
         <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5">
           <button
             onClick={() => setSelectedYear(CURRENT_YEAR)}
@@ -136,6 +137,7 @@ export function CapturaNecesidadesScreen() {
 
       <div className="px-4 pt-2 pb-2">
         <button
+          data-tutorial="necesidades-crear"
           onClick={() => setShowModal(true)}
           className="w-full bg-[#659B35] hover:bg-[#207041] active:bg-[#006633] text-white font-bold py-3.5 rounded-xl text-sm tracking-wide transition-colors shadow-sm"
         >
@@ -143,7 +145,7 @@ export function CapturaNecesidadesScreen() {
         </button>
       </div>
 
-      <div className="px-4 py-1.5">
+      <div className="px-4 py-1.5" data-tutorial="necesidades-filtros">
         <div className="relative">
           <Search
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -215,7 +217,7 @@ export function CapturaNecesidadesScreen() {
             <p className="text-sm">{t("needs.noResults")}</p>
           </div>
         ) : (
-          <div className="space-y-3 px-4">
+          <div className="space-y-3 px-4" data-tutorial="necesidades-list">
             {necesidadesFiltradas.map((nec) => (
               <button
                 key={nec.id}

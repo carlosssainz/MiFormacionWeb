@@ -74,11 +74,12 @@ export function TopHeader({ title, onHelpClick }) {
   }, []);
 
   return (
-    <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between shadow-sm">
-      <div className="flex items-center gap-2">
+    <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between shadow-sm lg:hidden">
+      <div className="flex items-center gap-2" data-tutorial="home-top-left">
         <button
           onClick={toggleMenu}
-          className="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 transition-colors"
+          data-tutorial="home-top-menu"
+          className="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 transition-colors lg:hidden"
           aria-label={t("header.openMenu")}
         >
           <Menu size={20} />
@@ -107,12 +108,25 @@ export function TopHeader({ title, onHelpClick }) {
           )}
         </div>
       ) : (
-        <div className="flex-1" />
+        <div className="flex-1 flex items-center">
+          <div className="hidden lg:flex flex-1 max-w-md mx-auto">
+            <button
+              onClick={() => setGlobalSearchOpen(true)}
+              className="flex-1 flex items-center gap-2 h-8 px-3 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-left overflow-hidden"
+            >
+              <Search size={14} className="shrink-0 text-gray-400" />
+              <span key={animKey} className="text-xs animate-fade-in">
+                {SEARCH_HINTS[hintIndex]}
+              </span>
+            </button>
+          </div>
+        </div>
       )}
 
       <div className="flex items-center gap-1.5">
         <button
           onClick={() => navigate("/acciones")}
+          data-tutorial="home-top-acciones"
           className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
           aria-label="Acciones pendientes"
         >
@@ -127,6 +141,7 @@ export function TopHeader({ title, onHelpClick }) {
         </button>
         <button
           onClick={() => navigate("/avisos")}
+          data-tutorial="home-top-avisos"
           className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
           aria-label={t("header.notifications")}
         >
@@ -139,16 +154,18 @@ export function TopHeader({ title, onHelpClick }) {
             )}
           </div>
         </button>
-        <button
-          onClick={() => navigate("/profile")}
-          className="w-[48px] h-[48px] rounded-full overflow-hidden border-2 border-[#659B35] hover:border-[#207041] transition-colors"
-        >
-          <img
-            src={perfilImg}
-            alt={t("header.profile")}
-            className="w-full h-full object-cover"
-          />
-        </button>
+        <div data-tutorial="home-top-perfil">
+          <button
+            onClick={() => navigate("/profile")}
+            className="w-[48px] h-[48px] rounded-full overflow-hidden border-2 border-[#659B35] hover:border-[#207041] transition-colors"
+          >
+            <img
+              src={perfilImg}
+              alt={t("header.profile")}
+              className="w-full h-full object-cover"
+            />
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -10,12 +10,16 @@ import {
   Sun,
   Moon,
   Languages,
+  Trophy,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { ScreenLayout } from "./ScreenLayout";
 import { ContextualHelp } from "./ContextualHelp";
+import { TutorialOverlay } from "./TutorialOverlay";
+import { TUTORIALS } from "../data/tutorialContent";
 import { useI18n } from "../context/I18nContext";
 import { LOCALE_NAMES, LOCALE_FLAGS } from "../i18n/translations";
+import { useTutorial } from "../context/TutorialContext";
 import { ConfirmDialog } from "./ConfirmDialog";
 
 const APP_VERSION = "1.0.0";
@@ -38,7 +42,9 @@ export function SettingsScreen() {
   const { t, locale, setLocale } = useI18n();
   const [langOpen, setLangOpen] = useState(false);
   const [pendingLocale, setPendingLocale] = useState(null);
-  const [helpOpen, setHelpOpen] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
+  const { completedCount, totalTutorials, progressPercent, resetAll } = useTutorial();
 
   const handleLocaleSelect = (loc) => {
     if (loc === "es") {
@@ -72,7 +78,7 @@ export function SettingsScreen() {
             </h1>
           </div>
           <button
-            onClick={() => setHelpOpen(true)}
+            onClick={() => setShowGuide(true)}
             className="w-7 h-7 rounded-full border border-[#659B35] dark:border-[#85C34A] text-[#659B35] dark:text-[#85C34A] hover:bg-[#659B35] hover:text-white dark:hover:bg-[#85C34A] dark:hover:text-gray-900 flex items-center justify-center transition-colors shrink-0 text-xs font-bold"
             aria-label={t("settings.help")}
           >
@@ -91,6 +97,7 @@ export function SettingsScreen() {
         <div className="space-y-1">
           <button
             onClick={toggleDarkMode}
+            data-tutorial="settings-apariencia"
             className="w-full flex items-center justify-between py-3 px-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             <div className="flex items-center gap-3">
@@ -123,6 +130,7 @@ export function SettingsScreen() {
 
           <button
             onClick={() => setLangOpen(!langOpen)}
+            data-tutorial="settings-idioma"
             className="w-full flex items-center justify-between py-3 px-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             <div className="flex items-center gap-3">
@@ -231,7 +239,7 @@ export function SettingsScreen() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 px-4 py-4 mb-3">
+      <div className="bg-white dark:bg-gray-800 px-4 py-4 mb-3" data-tutorial="settings-info">
         <h2 className="text-sm font-bold text-gray-800 dark:text-gray-100 mb-4 uppercase tracking-wide">
           {t("settings.about")}
         </h2>
@@ -277,6 +285,32 @@ export function SettingsScreen() {
         </div>
       </div>
 
+      <div className="bg-white dark:bg-gray-800 px-4 py-4 mb-3">
+        <div className="flex items-center gap-2 mb-3">
+          <Trophy size={18} className="text-[#659B35]" />
+          <h2 className="text-sm font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wide">
+            Tutoriales
+          </h2>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full bg-[#65A83E] animate-progress-bar"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+          <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 shrink-0">
+            {completedCount}/{totalTutorials}
+          </span>
+        </div>
+        <button
+          onClick={resetAll}
+          className="mt-2 text-[10px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 underline underline-offset-2 transition-colors"
+        >
+          ↻ Reiniciar tutoriales
+        </button>
+      </div>
+
       <div className="text-center py-4 text-xs text-gray-500">
         {t("settings.copyright")}
       </div>
@@ -299,9 +333,20 @@ export function SettingsScreen() {
 
       <ContextualHelp
         helpKey="settings"
-        open={helpOpen}
-        onClose={() => setHelpOpen(false)}
+        open={showGuide}
+        onClose={() => setShowGuide(false)}
+        onStartTutorial={() => { setShowGuide(false); setShowTutorial(true); }}
       />
+
+      {showTutorial && (
+        <TutorialOverlay
+          steps={TUTORIALS.ajustes.steps}
+          tutorialTitle={TUTORIALS.ajustes.title}
+          tutorialKey="ajustes"
+          onClose={() => setShowTutorial(false)}
+          onQuickGuide={() => { setShowTutorial(false); setShowGuide(true); }}
+        />
+      )}
     </ScreenLayout>
   );
 }

@@ -35,6 +35,7 @@ export function EvaluacionesScreen() {
           <button
             key={item.id}
             onClick={() => navigate(item.screen)}
+            data-tutorial={item.id === "encuestas" ? "evaluaciones-encuestas" : "evaluaciones-sugerencias"}
             className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm text-left hover:shadow-md transition-shadow relative"
           >
             <div className="w-12 h-12 bg-[#659B35] rounded-lg flex items-center justify-center text-white mb-3">
